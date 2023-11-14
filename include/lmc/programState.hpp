@@ -18,31 +18,37 @@ namespace lmc {
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const ProgramMemory &memory() const {
 			return m_memory;
 		}
+
 		LIBRAPID_ALWAYS_INLINE ProgramMemory &memory() { return m_memory; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const Datum &accumulator() const {
 			return m_accumulator;
 		}
+
 		LIBRAPID_ALWAYS_INLINE Datum &accumulator() { return m_accumulator; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const Datum &instructionCounter() const {
 			return m_instructionCounter;
 		}
+
 		LIBRAPID_ALWAYS_INLINE Datum &instructionCounter() { return m_instructionCounter; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const std::vector<Datum> &inputBuffer() const {
 			return m_inputBuffer;
 		}
+
 		LIBRAPID_ALWAYS_INLINE std::vector<Datum> &inputBuffer() { return m_inputBuffer; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const std::vector<Datum> &outputBuffer() const {
 			return m_outputBuffer;
 		}
+
 		LIBRAPID_ALWAYS_INLINE std::vector<Datum> &outputBuffer() { return m_outputBuffer; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const Datum &operator[](size_t index) const {
 			return m_memory[index];
 		}
+
 		LIBRAPID_ALWAYS_INLINE Datum &operator[](size_t index) { return m_memory[index]; }
 
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE const Datum &
