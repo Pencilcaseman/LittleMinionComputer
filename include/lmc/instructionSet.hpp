@@ -39,6 +39,13 @@ namespace lmc {
 		DAT = 1000 // Not a real instruction
 	};
 
+//	Datum instructionToDatum(const std::string &instruction, Datum ) {
+//		if (instruction == "ADD") return static_cast<Datum::ValueType>(InstructionSet::ADD);
+//		if (instruction == "SUB") return static_cast<Datum::ValueType>(InstructionSet::SUB);
+//		if (instruction == "STO") return static_cast<Datum::ValueType>(InstructionSet::STO);
+//		if (instruction == "LDA") return static_cast<Datum::ValueType>(InstructionSet::LDA);
+//	}
+
 	struct Opcode {
 		InstructionSet instruction;
 		Datum operand;

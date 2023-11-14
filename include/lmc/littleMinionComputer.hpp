@@ -2,6 +2,7 @@
 
 #include <librapid>
 #include <lmc/instructionSet.hpp>
+#include <lmc/assembler.hpp>
 
 namespace lmc {
 	class LittleMinionComputer {
@@ -25,6 +26,8 @@ namespace lmc {
 		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE ProgramState &initialState() {
 			return m_initialState;
 		}
+
+		LIBRAPID_ALWAYS_INLINE void reset() { m_state = m_initialState; }
 
 		LIBRAPID_ALWAYS_INLINE void execute() {
 			// Loop until HLT is called

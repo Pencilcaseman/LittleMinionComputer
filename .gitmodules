@@ -1,3 +1,6 @@
 [submodule "librapid"]
 	path = librapid
 	url = https://github.com/LibRapid/librapid.git
+[submodule "scnlib"]
+	path = scnlib
+	url = https://github.com/eliaskosunen/scnlib.git
