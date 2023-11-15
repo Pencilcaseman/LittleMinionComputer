@@ -27,7 +27,13 @@ namespace lmc {
 			return m_initialState;
 		}
 
-		LIBRAPID_ALWAYS_INLINE void reset() { m_state = m_initialState; }
+		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE uint64_t cycles() const { return m_cycles; }
+		LIBRAPID_NODISCARD LIBRAPID_ALWAYS_INLINE uint64_t &cycles() { return m_cycles; }
+
+		LIBRAPID_ALWAYS_INLINE void reset() {
+			m_state	 = m_initialState;
+			m_cycles = 0;
+		}
 
 		LIBRAPID_ALWAYS_INLINE void execute() {
 			// Loop until HLT is called
@@ -44,11 +50,15 @@ namespace lmc {
 				// Decode and execute the instruction
 				Opcode opcode = decodeInstruction(instruction);
 				executeInstruction(m_state, opcode);
+
+				// Increment cycle count
+				m_cycles++;
 			}
 		}
 
 	private:
 		ProgramState m_state;
 		ProgramState m_initialState;
+		uint64_t m_cycles = 0;
 	};
 } // namespace lmc

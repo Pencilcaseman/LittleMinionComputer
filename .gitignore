@@ -13,3 +13,7 @@ _deps
 build
 cmake-build-*
 .idea
+
+examples/3numAvg.lmc
+
+examples/averageProgram.lmc

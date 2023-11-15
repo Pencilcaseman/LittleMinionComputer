@@ -24,38 +24,50 @@ int main() {
 
 	for (const auto &val : computer123.state().outputBuffer()) { fmt::print("{}\n", val.value()); }
 
-	std::string testProgram = R"R0V0G0(
-		# Code to compute a divided by b
-				IN
-				STO	    a
-				IN
-				STO	    b
-		# Keep subtracting a from b until you go negative
-		# Keep a count of how many times you do it
-		start	LDA	    count
-				ADD	    one
-				STO	    count
-				LDA	    a
-				SUB	    b
-				STO	    a
-				BRP	    start
-		done	LDA	    count
-		# Subtract one as we went one too far
-				SUB	    one
-				OUT
-				HLT
-		a	    DAT	    000
-		b	    DAT	    000
-		count	DAT	    000
-		one	    DAT	    001
-	)R0V0G0";
+	std::fstream exampleFile(fmt::format("{}/examples/3numAvg.lmc", ROOT_DIR), std::ios::in);
+	LIBRAPID_ASSERT(exampleFile.good(), "Failed to open file");
+
+	std::string testProgram;
+	std::string line;
+	while (std::getline(exampleFile, line)) { testProgram += line + "\n"; }
 
 	lmc::LittleMinionComputer computer;
-	computer.initialState().memory() = lmc::assemble(testProgram);
+	// computer.initialState().inputBuffer() = {913,632,97};
+	// computer.initialState().inputBuffer() = {3, 6, 9};
+	computer.initialState().inputBuffer() = {999, 999, 999};
+	computer.initialState().memory()	  = lmc::assemble(testProgram, true);
+
+	if (true) {
+		fmt::print("Benchmarking...\n");
+		librapid::Timer timer;
+		timer.setTargetTime(2.5);
+		while (timer.isRunning()) {
+			computer.reset();
+			computer.execute();
+		}
+		fmt::print("Benchmark Results: {:.3}\n", timer);
+	}
+
 	computer.reset();
-	computer.execute();
-	for (const auto &out : computer.state().outputBuffer()) {
-		fmt::print("{}\n", out.str());
+
+	while (true) {
+		lmc::Datum::ValueType a, b, c;
+		fmt::print("Enter values: ");
+		if (!(std::cin >> a)) break;
+		if (!(std::cin >> b)) break;
+		if (!(std::cin >> c)) break;
+		computer.state().instructionCounter() = 0;
+		computer.cycles()					  = 0;
+		computer.state().inputBuffer()		  = {a, b, c};
+		computer.execute();
+
+		auto colOut	   = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
+		auto colPipe   = fmt::fg(fmt::color::gray) | fmt::emphasis::bold;
+		auto colCycles = fmt::fg(fmt::color::aquamarine) | fmt::emphasis::italic;
+
+		fmt::print(colOut, "{}", computer.state().outputBuffer().back().str());
+		fmt::print(colPipe, " | ");
+		fmt::print(colCycles, "{} cycles\n", computer.cycles());
 	}
 
 	return 0;

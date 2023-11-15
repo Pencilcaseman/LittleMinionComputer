@@ -1,7 +1,6 @@
 #pragma once
 
 #include <librapid>
-#include <scn/scan.h>
 #include <exception>
 #include <lmc/datum.hpp>
 #include <lmc/instructionSet.hpp>
@@ -32,7 +31,7 @@ namespace lmc {
 		std::string operand;
 	};
 
-	std::array<Datum, 100> assemble(const std::string &program) {
+	std::array<Datum, 100> assemble(const std::string &program, bool verbose = false) {
 		std::vector<std::string> reducedLines;
 
 		std::string current;
@@ -59,13 +58,11 @@ namespace lmc {
 
 		if (!current.empty()) reducedLines.emplace_back(current);
 
-		for (const auto &line : reducedLines) {
-			fmt::print("Line: {}\n", line);
-			std::cout << std::flush;
-		}
+		for (const auto &line : reducedLines) { std::cout << std::flush; }
 
 		std::vector<Operation> ops;
 		librapid::Map<std::string, Datum::ValueType> namedEntities;
+		namedEntities[""]	   = 0; // Ignore empty strings
 		Datum::ValueType index = 0;
 		for (const auto &line : reducedLines) {
 			// Parse the line
@@ -93,7 +90,6 @@ namespace lmc {
 			}
 
 			if (!tmp.empty()) split.emplace_back(tmp);
-			fmt::print("{}\n", split);
 			switch (split.size()) {
 				case 1: {
 					// Input/Output -- no operands
@@ -149,30 +145,28 @@ namespace lmc {
 
 		std::array<Datum, 100> memory;
 
-		//		for (const auto &op : ops) {
-		//			fmt::print("Operation:\n\tname: {}\n\toperation: {}\n\toperand: {}\n\n",
-		//					   op.name,
-		//					   op.operation.repr(),
-		//					   op.operand);
-		//		}
-		//
-		//		fmt::print("Entities: {}\n", namedEntities);
-
 		index = 0;
 		for (const auto &op : ops) {
-			Datum memVal;
+			Datum::ValueType memVal;
 			if (!op.operation.overflow()) {
 				// Set opcode and value
-				memVal = op.operation + namedEntities[op.operand];
+				Datum::ValueType entityLocation = namedEntities.get(op.operand, -1);
+				if (entityLocation < 0)
+					throw std::runtime_error(fmt::format("Unknown entity: '{}'", op.operand));
+				memVal = op.operation.value() + namedEntities[op.operand];
 			} else if (!op.operand.empty()) {
 				// Data declaration
-				if (auto result = scn::scan<Datum::ValueType>(op.operand, "{}")) {
-					memVal = result->value();
+
+				std::stringstream ss(op.operand);
+
+				if (ss >> memVal) {
+					if (ss.eof()) {
+					} else {
+						throw std::invalid_argument("Extra characters after number");
+					}
 				} else {
-					throw std::invalid_argument(
-					  fmt::format("Syntax error. Must be a 3-digit integer. Received {}:{}",
-								  op.name,
-								  op.operand));
+					// Parsing failed, throw an exception.
+					throw std::invalid_argument("Syntax error. Must be a 3-digit integer.");
 				}
 			} else {
 				// HLT is the only command that should take us here
@@ -180,6 +174,17 @@ namespace lmc {
 			}
 
 			memory[index] = memVal;
+
+			if (verbose) {
+				auto col1 = fmt::fg(fmt::color::green) | fmt::emphasis::bold;
+				auto col2 = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
+
+				fmt::print(col1, "Writing ");
+				fmt::print(col2, "{:0>3}", memVal);
+				fmt::print(col1, " to memory index ");
+				fmt::print(col2, "{:0>3}\n", index);
+			}
+
 			index++;
 		}
 
