@@ -65,6 +65,7 @@ namespace lmc {
 		namedEntities[""]	   = 0; // Ignore empty strings
 		Datum::ValueType index = 0;
 		for (const auto &line : reducedLines) {
+			bool skipLine = false;
 			// Parse the line
 			// 0. # Comment
 			// 1. IN
@@ -79,8 +80,9 @@ namespace lmc {
 			for (const auto &c : line) {
 				if (c == '#') { // Ignore comments
 					if (!tmp.empty()) split.emplace_back(tmp);
-					tmp = "";
-					goto lineContinue;
+					tmp		 = "";
+					skipLine = true;
+					break;
 				} else if (c == ' ') { // Split by whitespace
 					split.emplace_back(tmp);
 					tmp = "";
@@ -89,58 +91,60 @@ namespace lmc {
 				}
 			}
 
-			if (!tmp.empty()) split.emplace_back(tmp);
-			switch (split.size()) {
-				case 1: {
-					// Input/Output -- no operands
-					newOp.operation = instructionToDatum(split[0]);
-					break;
-				}
-				case 2: {
-					// <val> DAT
-					// <label> <IN/OUT>
-					// <op> <operand>
-
-					if (split[1] == "DAT") {
-						newOp.name				  = split[0];
-						newOp.operation			  = Datum(1000); // Force overflow
-						namedEntities[newOp.name] = index;
-					} else if (split[1] == "IN" || split[1] == "OUT") {
-						newOp.name		= split[0];
-						newOp.operation = instructionToDatum(split[1]);
-
-						namedEntities[newOp.name] = index;
-					} else {
+			if (!skipLine) {
+				if (!tmp.empty()) split.emplace_back(tmp);
+				switch (split.size()) {
+					case 1: {
+						// Input/Output -- no operands
 						newOp.operation = instructionToDatum(split[0]);
-						newOp.operand	= split[1];
+						break;
 					}
-					break;
-				}
-				case 3: {
-					if (split[1] == "DAT") { // <var> DAT <val>
-						newOp.name		= split[0];
-						newOp.operation = Datum(1000); // Force overflow
-						newOp.operand	= split[2];
+					case 2: {
+						// <val> DAT
+						// <label> <IN/OUT>
+						// <op> <operand>
 
-						namedEntities[newOp.name] = index;
-					} else { // <label> <op> <operand>
-						newOp.name		= split[0];
-						newOp.operation = instructionToDatum(split[1]);
-						newOp.operand	= split[2];
+						if (split[1] == "DAT") {
+							newOp.name				  = split[0];
+							newOp.operation			  = Datum(1000); // Force overflow
+							namedEntities[newOp.name] = index;
+						} else if (split[1] == "IN" || split[1] == "OUT") {
+							newOp.name		= split[0];
+							newOp.operation = instructionToDatum(split[1]);
 
-						namedEntities[newOp.name] = index;
+							namedEntities[newOp.name] = index;
+						} else {
+							newOp.operation = instructionToDatum(split[0]);
+							newOp.operand	= split[1];
+						}
+						break;
 					}
+					case 3: {
+						if (split[1] == "DAT") { // <var> DAT <val>
+							newOp.name		= split[0];
+							newOp.operation = Datum(1000); // Force overflow
+							newOp.operand	= split[2];
 
-					break;
+							namedEntities[newOp.name] = index;
+						} else { // <label> <op> <operand>
+							newOp.name		= split[0];
+							newOp.operation = instructionToDatum(split[1]);
+							newOp.operand	= split[2];
+
+							namedEntities[newOp.name] = index;
+						}
+
+						break;
+					}
+					default: {
+						throw std::invalid_argument(fmt::format("Syntax error in line '{}'", line));
+					}
 				}
-				default: {
-					throw std::invalid_argument(fmt::format("Syntax error in line '{}'", line));
-				}
+
+				ops.emplace_back(newOp);
+				index++;
 			}
-
-			ops.emplace_back(newOp);
-			index++;
-		lineContinue:
+		// lineContinue:
 		}
 
 		std::array<Datum, 100> memory;

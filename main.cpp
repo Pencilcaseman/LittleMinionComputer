@@ -26,7 +26,7 @@ int main() {
 
 	for (const auto &val : computer123.state().outputBuffer()) { fmt::print("{}\n", val.value()); }
 
-	std::fstream exampleFile(fmt::format("{}/examples/testing2.lmc", ROOT_DIR), std::ios::in);
+	std::fstream exampleFile(fmt::format("{}/examples/testing3.lmc", ROOT_DIR), std::ios::in);
 	LIBRAPID_ASSERT(exampleFile.good(), "Failed to open file");
 
 	std::string testProgram;
