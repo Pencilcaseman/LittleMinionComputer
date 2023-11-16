@@ -26,7 +26,9 @@ int main() {
 
 	for (const auto &val : computer123.state().outputBuffer()) { fmt::print("{}\n", val.value()); }
 
-	std::fstream exampleFile(fmt::format("{}/examples/testing2.lmc", ROOT_DIR), std::ios::in);
+	// std::fstream exampleFile(fmt::format("{}/examples/testing2.lmc", ROOT_DIR), std::ios::in);
+	std::fstream exampleFile(fmt::format("{}/examples/smallest.lmc", ROOT_DIR),
+							 std::ios::in);
 	LIBRAPID_ASSERT(exampleFile.good(), "Failed to open file");
 
 	std::string testProgram;
@@ -50,7 +52,7 @@ int main() {
 		fmt::print("Benchmark Results: {:.3}\n", timer);
 	}
 
-	if (true) {
+	if (false) {
 		auto numCol	 = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
 		auto errCol	 = fmt::fg(fmt::color::red) | fmt::emphasis::bold;
 		auto textCol = fmt::fg(fmt::color::dark_gray) | fmt::emphasis::bold;
@@ -105,8 +107,8 @@ int main() {
 		lmc::Datum::ValueType a, b, c;
 		fmt::print("Enter values: ");
 		if (!(std::cin >> a)) break;
-		if (!(std::cin >> b)) break;
-		if (!(std::cin >> c)) break;
+		// if (!(std::cin >> b)) break;
+		// if (!(std::cin >> c)) break;
 
 		computer.state().instructionCounter() = 0;
 		computer.cycles()					  = 0;
@@ -114,7 +116,8 @@ int main() {
 
 		computer.reset();
 
-		computer.state().inputBuffer() = {a, b, c};
+		// computer.state().inputBuffer() = {a, b, c};
+		computer.state().inputBuffer() = {a};
 		computer.execute();
 
 		const auto &buf = computer.state().outputBuffer();

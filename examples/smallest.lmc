@@ -1,0 +1,29 @@
+# Take inputs until a zero is received, and output
+# the smallest.
+
+        LDA nine99
+        STO small
+
+loop    IN
+        STO tmp
+
+        BRZ end
+
+        SUB small
+
+        BRP loop
+
+        LDA tmp
+        STO small
+
+        BR  loop
+
+end     LDA small
+        OUT
+
+        HLT
+
+tmp     DAT 000
+small   DAT 999
+nine99  DAT 999
+one     DAT 001

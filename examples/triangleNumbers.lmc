@@ -1,0 +1,29 @@
+# Output the first n triangle numbers, where
+# n is an inputted number
+
+        IN
+        STO n
+        LDA zero
+        STO tot
+        STO val
+
+loop    LDA val
+        ADD one
+        STO val
+
+        ADD tot
+        STO tot
+        OUT
+
+        LDA n
+        SUB one
+        STO n
+
+        BRP loop
+
+zero    DAT 000
+
+n       DAT 000
+val     DAT 000
+tot     DAT 000
+one     DAT 001
