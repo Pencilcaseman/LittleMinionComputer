@@ -17,3 +17,7 @@ cmake-build-*
 examples/3numAvg.lmc
 
 examples/averageProgram.lmc
+
+examples/testing.lmc
+
+examples/testing2.lmc

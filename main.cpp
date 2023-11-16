@@ -1,5 +1,7 @@
 #include <lmc/littleMinionComputer.hpp>
 
+#include <progressive/prog.hpp>
+
 int main() {
 	fmt::print("Hello, World\n");
 
@@ -24,7 +26,7 @@ int main() {
 
 	for (const auto &val : computer123.state().outputBuffer()) { fmt::print("{}\n", val.value()); }
 
-	std::fstream exampleFile(fmt::format("{}/examples/3numAvg.lmc", ROOT_DIR), std::ios::in);
+	std::fstream exampleFile(fmt::format("{}/examples/testing2.lmc", ROOT_DIR), std::ios::in);
 	LIBRAPID_ASSERT(exampleFile.good(), "Failed to open file");
 
 	std::string testProgram;
@@ -37,7 +39,7 @@ int main() {
 	computer.initialState().inputBuffer() = {999, 999, 999};
 	computer.initialState().memory()	  = lmc::assemble(testProgram, true);
 
-	if (true) {
+	if (false) {
 		fmt::print("Benchmarking...\n");
 		librapid::Timer timer;
 		timer.setTargetTime(2.5);
@@ -48,7 +50,56 @@ int main() {
 		fmt::print("Benchmark Results: {:.3}\n", timer);
 	}
 
+	if (true) {
+		auto numCol	 = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
+		auto errCol	 = fmt::fg(fmt::color::red) | fmt::emphasis::bold;
+		auto textCol = fmt::fg(fmt::color::dark_gray) | fmt::emphasis::bold;
+
+		uint64_t maxCycles = 0;
+
+		fmt::print("Testing...\n");
+		computer.reset();
+		for (prog::Progress a(lmc::Datum::ValueType(0)); a < 1000; ++a) {
+			for (lmc::Datum::ValueType b = 0; b < 1000; ++b) {
+				for (lmc::Datum::ValueType c = 0; c < 1000; ++c) {
+					computer.state().instructionCounter() = 0;
+					computer.cycles()					  = 0;
+					computer.state().outputBuffer().clear();
+					computer.state().inputBuffer() = {a.get(), b, c};
+					computer.execute();
+
+					lmc::Datum::ValueType ans = (a.get() + b + c) / 3;
+					lmc::Datum ret			  = computer.state().outputBuffer().back();
+
+					if (ret.value() != ans) {
+						fmt::print(errCol, "\nError: ");
+						fmt::print(textCol, "(");
+						fmt::print(numCol, "{}", a.get());
+						fmt::print(textCol, " + ");
+						fmt::print(numCol, "{}", b);
+						fmt::print(textCol, " + ");
+						fmt::print(numCol, "{}", c);
+						fmt::print(textCol, ") / 3 = ");
+						fmt::print(numCol, "{}", ans);
+						fmt::print(textCol, " != ");
+						fmt::print(numCol, "{}", ret.value());
+						fmt::print("\n");
+					}
+
+					if (computer.cycles() > maxCycles) {
+						maxCycles = computer.cycles();
+						a.log(fmt::format("Max cycles: {} ({}, {}, {})", maxCycles, a.get(), b, c));
+					}
+				}
+			}
+		}
+	}
+
 	computer.reset();
+
+	auto colOut	   = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
+	auto colPipe   = fmt::fg(fmt::color::gray) | fmt::emphasis::bold;
+	auto colCycles = fmt::fg(fmt::color::aquamarine) | fmt::emphasis::italic;
 
 	while (true) {
 		lmc::Datum::ValueType a, b, c;
@@ -56,16 +107,21 @@ int main() {
 		if (!(std::cin >> a)) break;
 		if (!(std::cin >> b)) break;
 		if (!(std::cin >> c)) break;
+
 		computer.state().instructionCounter() = 0;
 		computer.cycles()					  = 0;
-		computer.state().inputBuffer()		  = {a, b, c};
+		computer.state().outputBuffer().clear();
+
+		computer.reset();
+
+		computer.state().inputBuffer() = {a, b, c};
 		computer.execute();
 
-		auto colOut	   = fmt::fg(fmt::color::orange) | fmt::emphasis::bold;
-		auto colPipe   = fmt::fg(fmt::color::gray) | fmt::emphasis::bold;
-		auto colCycles = fmt::fg(fmt::color::aquamarine) | fmt::emphasis::italic;
-
-		fmt::print(colOut, "{}", computer.state().outputBuffer().back().str());
+		const auto &buf = computer.state().outputBuffer();
+		for (size_t i = 0; i < buf.size(); ++i) {
+			fmt::print(colOut, "{}", buf[i].str());
+			if (i != buf.size() - 1) fmt::print("\n");
+		}
 		fmt::print(colPipe, " | ");
 		fmt::print(colCycles, "{} cycles\n", computer.cycles());
 	}

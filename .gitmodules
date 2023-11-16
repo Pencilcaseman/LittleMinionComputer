@@ -1,3 +1,6 @@
 [submodule "librapid"]
 	path = librapid
 	url = https://github.com/LibRapid/librapid.git
+[submodule "progressive"]
+	path = progressive
+	url = https://github.com/Pencilcaseman/progressive
